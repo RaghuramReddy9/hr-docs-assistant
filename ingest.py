@@ -24,5 +24,5 @@ def create_vector_store(pdf_path, persist_path="faiss_index"):
     vectorstore = FAISS.from_documents(chunks, embedding=embeddings)
     vectorstore.save_local(persist_path)
 
-# 🔁 Run it
+#  Run it
 create_vector_store("data/hr_policies.pdf")

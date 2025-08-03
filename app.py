@@ -22,9 +22,17 @@ if user_input:
     })
 
     response = result["answer"]
+    sources = result.get("source_documents", [])
 
-    st.session_state.chat_history.append((user_input, response))
+    st.session_state.chat_history.append((user_input, response, sources))
 
-    for q, a in st.session_state.chat_history:
+    # Display chat history
+    for q, a, src in st.session_state.chat_history:
         st.markdown(f"**You:** {q}")
         st.markdown(f"**Bot:** {a}")
+
+        # Show sources if available
+        if src:
+            with st.expander("View Sources"):
+                for i, doc in enumerate(src, 1):
+                    st.markdown(f"**Source {i}:** {doc.metadata.get('source', 'Unknown file')}")
