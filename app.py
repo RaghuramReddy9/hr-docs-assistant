@@ -1,5 +1,5 @@
 import streamlit as st
-from backend.ingest import create_vector_store
+from backend.ingest import build_vector_store
 from backend.rag_chain import create_rag_chain
 import os
 
@@ -17,14 +17,14 @@ st.markdown("Ask questions about HR policies and employee guidelines.")
 
 # Initialize session state
 if "qa_chain" not in st.session_state:
-    st.session_state.qa_chain = create_rag_chain()
+    st.session_state.qa_chain = build_vector_store()
 
 uploaded = st.sidebar.file_uploader("Upload HR Policy PDF", type=["pdf"])
 if uploaded:
     temp_path = os.path.join("data", uploaded.name)
     with open(temp_path, "wb") as f:
         f.write(uploaded.read())
-    create_vector_store(temp_path)
+    build_vector_store(temp_path)
     st.session_state.qa_chain = create_rag_chain()
     st.sidebar.success("Knowledge base updated!")
 
