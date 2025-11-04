@@ -1,14 +1,14 @@
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain_core.prompts import PromptTemplate
 from backend.llm import get_llm
 
-def load_vector_store(index_path: str = "faiss_index"):
-    """Load existing FAISS index."""
+def load_vector_store(index_path: str = "chroma_index"):
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    return FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
+    return Chroma(persist_directory=index_path, embedding_function=embeddings)
+
 
 def create_rag_chain():
     """Create a modern retrieval chain (retriever + LLM combine chain)."""
