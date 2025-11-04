@@ -1,38 +1,40 @@
 import streamlit as st
-from rag_chain import get_chain
+from backend.ingest import create_vector_store
+from backend.rag_chain import create_rag_chain
+import os
 
-st.set_page_config(page_title="HR Assistant", layout="centered")
+st.set_page_config(page_title="HR Document Assistant", page_icon="💼", layout="wide")
+st.markdown("""
+<style>
+.stTextInput, .stButton>button {font-size:16px;}
+h1 {color:#0a66c2;}
+</style>
+""", unsafe_allow_html=True)
+
+
 st.title("HR Document Assistant")
+st.markdown("Ask questions about HR policies and employee guidelines.")
 
 # Initialize session state
-if "chain" not in st.session_state:
-    st.session_state.chain = get_chain()
+if "qa_chain" not in st.session_state:
+    st.session_state.qa_chain = create_rag_chain()
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+uploaded = st.sidebar.file_uploader("Upload HR Policy PDF", type=["pdf"])
+if uploaded:
+    temp_path = os.path.join("data", uploaded.name)
+    with open(temp_path, "wb") as f:
+        f.write(uploaded.read())
+    create_vector_store(temp_path)
+    st.session_state.qa_chain = create_rag_chain()
+    st.sidebar.success("Knowledge base updated!")
 
-# Input box
-user_input = st.text_input("Ask a question about HR policies:")
+question = st.text_input("Enter your question:")
 
-# Run chain
-if user_input:
-    result = st.session_state.chain.invoke({
-        "question": user_input,
-        "chat_history": st.session_state.chat_history
-    })
+if st.button("Ask") and question:
+    result = st.session_state.qa_chain({"query": question})
+    st.write("### Answer")
+    st.write(result["result"])
 
-    response = result["answer"]
-    sources = result.get("source_documents", [])
-
-    st.session_state.chat_history.append((user_input, response, sources))
-
-    # Display chat history
-    for q, a, src in st.session_state.chat_history:
-        st.markdown(f"**You:** {q}")
-        st.markdown(f"**Bot:** {a}")
-
-        # Show sources if available
-        if src:
-            with st.expander("View Sources"):
-                for i, doc in enumerate(src, 1):
-                    st.markdown(f"**Source {i}:** {doc.metadata.get('source', 'Unknown file')}")
+    with st.expander("View referenced policy sections"):
+        for i, doc in enumerate(result["source_documents"], 1):
+            st.markdown(f"**Source {i}:** {doc.page_content[:400]}...")

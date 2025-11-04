@@ -1,14 +1,7 @@
 # 🧾 HR Document Assistant
 
-A Generative AI-powered HR Knowledge Assistant that can answer HR policy questions from your internal documents.
-
-This project demonstrates a Retrieval-Augmented Generation (RAG) pipeline with LangChain, FAISS, and Streamlit, capable of:
-
-1. Multi-turn conversations with memory
-
-2. Answering queries over PDF HR policies
-
-3. Providing source documents for traceability
+A Retrieval-Augmented Generation (RAG) chatbot that answers HR-policy questions
+using company documents as context.
 
 ## Project Screenshot
 
@@ -39,23 +32,28 @@ This project demonstrates a Retrieval-Augmented Generation (RAG) pipeline with L
 - Streamlit – For web-based UI
 
 ## Folder Structure
+hr-assistant/
+│
 ├── app.py
-├── rag_chain.py
-├── ingest.py
-├── llm.py
+├── backend/
+│   ├── ingest.py
+│   ├── llm.py
+│   └── rag_chain.py
 ├── data/
-│ └── hr_policies.pdf
-├── faiss_index/
-│ ├── index.faiss
-│ └── index.pkl
-├── .env
-└── requirements.txt
+│   └── hr_policies.pdf
+├── screenshots/
+│   └── hr_bot_demo.png
+├── requirements.txt
+├── .env.example
+└── README.md
 
 ## Run Locally
 ```bash
 pip install -r requirements.txt
 streamlit run app.py 
 ```
+## 🌐 Demo
+*(add your Streamlit Cloud or Hugging Face Spaces link)*
 
 ## Use Case
 ```
