@@ -31,10 +31,10 @@ if uploaded:
 question = st.text_input("Enter your question:")
 
 if st.button("Ask") and question:
-    result = st.session_state.qa_chain({"query": question})
+    result = st.session_state.qa_chain.invoke({"input": question})
     st.write("### Answer")
-    st.write(result["result"])
+    st.write(result.get("answer", "No answer found."))
 
-    with st.expander("View referenced policy sections"):
-        for i, doc in enumerate(result["source_documents"], 1):
-            st.markdown(f"**Source {i}:** {doc.page_content[:400]}...")
+    if "context" in result:
+        with st.expander("View referenced policy context"):
+            st.write(result["context"])

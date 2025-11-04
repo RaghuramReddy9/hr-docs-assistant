@@ -1,7 +1,8 @@
-from langchain.chains.retrieval_qa.base import RetrievalQA
-from langchain_core.prompts import PromptTemplate
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains.retrieval import create_retrieval_chain
+from langchain_core.prompts import PromptTemplate
 from backend.llm import get_llm
 
 def load_vector_store(index_path: str = "faiss_index"):
@@ -10,24 +11,32 @@ def load_vector_store(index_path: str = "faiss_index"):
     return FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
 
 def create_rag_chain():
-    """Biuld RAG Pipeline."""
+    """Create a modern retrieval chain (retriever + LLM combine chain)."""
     llm = get_llm()
     db = load_vector_store()
     retriever = db.as_retriever(search_kwargs={"k":3})
 
     template = """
-    You are an HR assistant. Use the following context to answer the question.
-    Context: {context}
-    Question: {question}
-    Provide a clear, factual answer.
+    You are an HR assistant helping employees understand HR policies.
+
+    Use the following context sections to answer the question factually.
+    If the answer isn't contained in the context, say "I could not find that information in the policy."
+
+    Context:
+    {context}
+
+    Question:
+    {input}
+
+    Answer clearly and concisely:
     """
 
-    prompt = PromptTemplate(template=template, input_variables=["context", "question"])
+    prompt = PromptTemplate(template=template, input_variables=["context", "input"])
 
-    return RetrievalQA.from_chain_type(
-        llm=llm,
-        retriever=retriever,
-        chain_type="stuff",  
-        chain_type_kwargs={"prompt": prompt},
-        return_source_documents=True
-    )
+    # create a combine-documents chain
+    combine_docs_chain = create_stuff_documents_chain(llm, prompt)
+
+    # create the retrieval chain
+    retrieval_chain = create_retrieval_chain(retriever, combine_docs_chain)
+
+    return retrieval_chain
